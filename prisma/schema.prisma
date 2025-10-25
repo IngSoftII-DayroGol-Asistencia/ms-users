@@ -1,0 +1,330 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ==================== ENUMS ====================
+
+enum TokenType {
+  ACCESS
+  REFRESH
+  PASSWORD_RESET
+  EMAIL_VERIFICATION
+}
+
+enum PermissionAction {
+  CREATE
+  READ
+  UPDATE
+  DELETE
+  MANAGE
+}
+
+enum ResourceType {
+  USERS
+  ROLES
+  PERMISSIONS
+  AUDIT_LOGS
+  SETTINGS
+}
+
+enum EmploymentType {
+  FULL_TIME
+  PART_TIME
+  CONTRACT
+  FREELANCE
+  INTERN
+}
+
+enum ExperienceLevel {
+  JUNIOR
+  MID
+  SENIOR
+  LEAD
+  PRINCIPAL
+}
+
+// ==================== AUTH & SECURITY ====================
+
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  password  String
+  phone     String?  @unique
+  
+  // Account status
+  isActive  Boolean  @default(true)
+  isVerified Boolean @default(false)
+  lastLogin DateTime?
+  
+  // Relations
+  profile   UserProfile?
+  roles     Role[]              @relation("UserRoles")
+  tokens    AuthToken[]
+  permissions PermissionAssignment[] @relation("UserPermissions")
+  auditLogs AuditLog[]          @relation("UserAudits")
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([email])
+  @@index([phone])
+}
+
+model AuthToken {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  type      TokenType
+  token     String   @unique
+  expiresAt DateTime
+  revokedAt DateTime?
+  
+  createdAt DateTime @default(now())
+  
+  @@index([userId])
+  @@index([token])
+}
+
+// ==================== USER PROFILE & CV ====================
+
+model UserProfile {
+  id                String   @id @default(cuid())
+  userId            String   @unique
+  user              User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  // Personal Information
+  firstName         String
+  lastName          String
+  dateOfBirth       DateTime?
+  
+  // Professional Information
+  jobTitle          String?
+  department        String?
+  bio               String?
+  
+  // Media
+  profilePhotoUrl   String?  // URL a storage (S3, CloudStorage, etc)
+  profilePhotoKey   String?  // Key para recuperar el archivo
+  
+  // Contact Information (heredado de Auth, pero puede sobreescribirse)
+  phone             String?  // Duplicado de User.phone para referencia rápida
+  emergencyContact  String?
+  emergencyPhone    String?
+  
+  // Location
+  country           String?
+  city              String?
+  address           String?
+  postalCode        String?
+  
+  // Additional
+  timezone          String?  @default("UTC")
+  language          String?  @default("es")
+  
+  // CV Relations
+  experiences       Experience[]
+  educations        Education[]
+  skills            Skill[]
+  certifications    Certification[]
+  languages         LanguageProficiency[]
+  
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+}
+
+// ==================== CV DATA ====================
+
+model Experience {
+  id                String   @id @default(cuid())
+  profileId         String
+  profile           UserProfile @relation(fields: [profileId], references: [id], onDelete: Cascade)
+  
+  // Company & Position
+  companyName       String
+  jobTitle          String
+  description       String?  // Descripción del trabajo
+  
+  // Employment Details
+  employmentType    EmploymentType
+  experienceLevel   ExperienceLevel?
+  
+  // Dates
+  startDate         DateTime
+  endDate           DateTime?
+  isCurrent         Boolean  @default(false)
+  
+  // Additional
+  location          String?
+  skills            String[]  // Array de skills usados en este trabajo
+  achievements      String?   // Logros/contribuciones
+  
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+  
+  @@index([profileId])
+}
+
+model Education {
+  id                String   @id @default(cuid())
+  profileId         String
+  profile           UserProfile @relation(fields: [profileId], references: [id], onDelete: Cascade)
+  
+  // Institution & Degree
+  school            String
+  degree            String    // Ej: Bachelor, Master, etc
+  fieldOfStudy      String
+  
+  // Grades
+  grade             String?   // GPA o calificación
+  
+  // Dates
+  startDate         DateTime
+  endDate           DateTime?
+  isCurrent         Boolean  @default(false)
+  
+  // Additional
+  description       String?   // Actividades, sociedades, etc
+  skills            String[]  // Skills adquiridas
+  
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+  
+  @@index([profileId])
+}
+
+model Skill {
+  id                String   @id @default(cuid())
+  profileId         String
+  profile           UserProfile @relation(fields: [profileId], references: [id], onDelete: Cascade)
+  
+  name              String
+  proficiency       ExperienceLevel?  // JUNIOR, MID, SENIOR, etc
+  yearsOfExperience Int?    // Años de experiencia
+  endorsements      Int     @default(0) // Cantidad de personas que lo recomiendan
+  
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+  
+  @@unique([profileId, name])
+  @@index([profileId])
+}
+
+model Certification {
+  id                String   @id @default(cuid())
+  profileId         String
+  profile           UserProfile @relation(fields: [profileId], references: [id], onDelete: Cascade)
+  
+  name              String
+  issuingOrganization String
+  issueDate         DateTime
+  expirationDate    DateTime?
+  certificateUrl    String?   // URL o referencia
+  certificateId     String?   // ID del certificado (para verificación)
+  
+  description       String?
+  
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+  
+  @@index([profileId])
+}
+
+model LanguageProficiency {
+  id                String   @id @default(cuid())
+  profileId         String
+  profile           UserProfile @relation(fields: [profileId], references: [id], onDelete: Cascade)
+  
+  language          String
+  proficiency       String   // BEGINNER, INTERMEDIATE, FLUENT, NATIVE, etc
+  
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+  
+  @@unique([profileId, language])
+  @@index([profileId])
+}
+
+// ==================== ROLES & PERMISSIONS ====================
+
+model Role {
+  id          String   @id @default(cuid())
+  name        String   @unique
+  description String?
+  isSystem    Boolean  @default(false) // Roles del sistema no pueden eliminarse
+  isCustom    Boolean  @default(true)  // Roles personalizados por admin
+  
+  // Relations
+  users       User[]   @relation("UserRoles")
+  permissions Permission[] @relation("RolePermissions")
+  
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  @@index([name])
+}
+
+model Permission {
+  id          String   @id @default(cuid())
+  name        String   @unique
+  description String?
+  action      PermissionAction
+  resource    ResourceType
+  
+  // Relations
+  roles       Role[]   @relation("RolePermissions")
+  userAssignments PermissionAssignment[] @relation("PermissionAssignments")
+  
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  @@unique([action, resource])
+  @@index([resource])
+}
+
+model PermissionAssignment {
+  id          String   @id @default(cuid())
+  userId      String
+  user        User     @relation("UserPermissions", fields: [userId], references: [id], onDelete: Cascade)
+  
+  permissionId String
+  permission  Permission @relation("PermissionAssignments", fields: [permissionId], references: [id], onDelete: Cascade)
+  
+  grantedBy   String   // ID del admin que otorgó el permiso
+  grantedAt   DateTime @default(now())
+  expiresAt   DateTime? // Permiso temporal
+  
+  @@unique([userId, permissionId])
+  @@index([userId])
+  @@index([permissionId])
+}
+
+// ==================== AUDIT & LOGGING ====================
+
+model AuditLog {
+  id          String   @id @default(cuid())
+  userId      String
+  user        User     @relation("UserAudits", fields: [userId], references: [id], onDelete: Cascade)
+  
+  action      String   // CREATE, UPDATE, DELETE, LOGIN, LOGOUT, etc
+  resource    ResourceType
+  resourceId  String?  // ID del recurso modificado
+  
+  changes     Json?    // Cambios realizados {before: {...}, after: {...}}
+  ipAddress   String?
+  userAgent   String?
+  
+  createdAt   DateTime @default(now())
+  
+  @@index([userId])
+  @@index([resource])
+  @@index([createdAt])
+}
