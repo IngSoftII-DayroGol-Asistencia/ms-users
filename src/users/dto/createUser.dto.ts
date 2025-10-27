@@ -1,16 +1,75 @@
+import { ApiProperty } from "@nestjs/swagger";
+import { IsNotEmpty, IsOptional, IsString } from "class-validator";
+
 export class CreateUserDto {
+
+  @ApiProperty()
+  @IsString()
+  @IsNotEmpty()
   firstName: string;
+
+  @ApiProperty()
+  @IsString()
+  @IsNotEmpty()
   lastName: string;
-  dateOfBirth?: string | null;
-  jobTitle?: string | null;
-  department?: string | null;
-  bio?: string | null;
-  profilePhotoUrl?: string | null;
-  profilePhotoKey?: string | null;
-  emergencyContact?: string | null;
-  emergencyPhone?: string | null;
-  country?: string | null;
-  city?: string | null;
-  address?: string | null;
-  postalCode?: string | null;
+
+  @ApiProperty()
+  @IsString()
+  @IsOptional()
+  dateOfBirth?: string;
+
+  @ApiProperty()
+  @IsString()
+  @IsOptional()
+  jobTitle?: string;
+
+  @ApiProperty()
+  @IsString()
+  @IsOptional()
+  department?: string;
+
+  @ApiProperty()
+  @IsString()
+  @IsOptional()
+  bio?: string;
+
+  @ApiProperty()
+  @IsString()
+  @IsOptional()
+  profilePhotoUrl?: string;
+
+  @ApiProperty()
+  @IsString()
+  @IsOptional()
+  profilePhotoKey?: string;
+
+  @ApiProperty()
+  @IsString()
+  @IsOptional()
+  emergencyContact?: string;
+
+  @ApiProperty()
+  @IsString()
+  @IsOptional()
+  emergencyPhone?: string;
+
+  @ApiProperty()
+  @IsString()
+  @IsOptional()
+  country?: string;
+
+  @ApiProperty()
+  @IsString()
+  @IsOptional()
+  city?: string;
+
+  @ApiProperty()
+  @IsString()
+  @IsOptional()
+  address?: string;
+
+  @ApiProperty()
+  @IsString()
+  @IsOptional()
+  postalCode?: string;
 }

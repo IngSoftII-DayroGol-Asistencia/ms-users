@@ -12,7 +12,7 @@ import { jwtConstants } from './constants';
   imports: [UsersModule, PrismaModule, JwtModule.register({
     global: true,
     secret: jwtConstants.secret,
-    signOptions: { expiresIn: '60s' },
+    signOptions: { expiresIn: '3600s' },
   }),]
 })
 export class AuthModule { }
