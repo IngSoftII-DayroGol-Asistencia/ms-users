@@ -31,6 +31,22 @@
 $ pnpm install
 ```
 
+To run you must run the next bash block: 
+```bash
+$ cp .env.example .env
+$ nano .env #Aca lo importante es ponerle sus variables de entorno.
+$ docker-compose up -d 
+```
+
+Asi todo estara en http://localhost:3000
+
+
+Para dejar de usar el puerto: 
+
+```bash
+$ docker-compose down
+```
+
 ## Compile and run the project
 
 ```bash
