@@ -33,6 +33,8 @@ enum ResourceType {
   PERMISSIONS
   AUDIT_LOGS
   SETTINGS
+  ENTERPRISE
+  USER_RELATIONSHIPS
 }
 
 enum EmploymentType {
@@ -51,28 +53,115 @@ enum ExperienceLevel {
   PRINCIPAL
 }
 
+enum RelationshipType {
+  CONTACT
+  COLLABORATOR
+  FRIEND
+  COLLEAGUE
+  MENTOR
+  MENTEE
+  TEAM_MEMBER
+}
+
+// ==================== ENTERPRISE ====================
+
+model Enterprise {
+  id          String   @id @default(cuid())
+  name        String   @unique
+  description String?
+  logo        String?
+  website     String?
+  
+  // Relations
+  roles       Role[]
+  users       UserEnterprise[]
+  permissions EnterprisePermission[]
+  auditLogs   AuditLog[] @relation("EnterpriseAudits")
+  
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  @@index([name])
+}
+
+// ==================== USER ENTERPRISE RELATION ====================
+
+model UserEnterprise {
+  id            String   @id @default(cuid())
+  userId        String
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  enterpriseId  String
+  enterprise    Enterprise @relation(fields: [enterpriseId], references: [id], onDelete: Cascade)
+  
+  joinedAt      DateTime @default(now())
+  
+  @@unique([userId, enterpriseId])
+  @@index([userId])
+  @@index([enterpriseId])
+}
+
+// ==================== USER RELATIONSHIPS (Many-to-Many) ====================
+
+model UserRelationship {
+  id                String   @id @default(cuid())
+  
+  // Usuario que inicia la relación
+  userId            String
+  user              User     @relation("InitiatedRelationships", fields: [userId], references: [id], onDelete: Cascade)
+  
+  // Usuario relacionado
+  relatedUserId     String
+  relatedUser       User     @relation("ReceivedRelationships", fields: [relatedUserId], references: [id], onDelete: Cascade)
+  
+  // Tipo de relación
+  relationshipType  RelationshipType @default(CONTACT)
+  
+  // Estado de la relación (pendiente, aceptada, bloqueada)
+  status            String   @default("PENDING") // PENDING, ACCEPTED, BLOCKED
+  
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+  
+  @@unique([userId, relatedUserId])
+  @@index([userId])
+  @@index([relatedUserId])
+  @@index([status])
+}
+
 // ==================== AUTH & SECURITY ====================
 
 model User {
-  id        String   @id @default(cuid())
-  email     String   @unique
-  password  String
-  phone     String?  @unique
+  id                String   @id @default(cuid())
+  email             String   @unique
+  password          String
+  phone             String?  @unique
   
   // Account status
-  isActive  Boolean  @default(true)
-  isVerified Boolean @default(false)
-  lastLogin DateTime?
+  isActive          Boolean  @default(true)
+  isVerified        Boolean  @default(false)
+  lastLogin         DateTime?
   
   // Relations
-  profile   UserProfile?
-  roles     Role[]              @relation("UserRoles")
-  tokens    AuthToken[]
-  permissions PermissionAssignment[] @relation("UserPermissions")
-  auditLogs AuditLog[]          @relation("UserAudits")
+  profile           UserProfile?
+  roles             Role[]              @relation("UserRoles")
+  tokens            AuthToken[]
+  permissions       PermissionAssignment[] @relation("UserPermissions")
+  auditLogs         AuditLog[]          @relation("UserAudits")
   
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  // User Relationships (Many-to-Many)
+  initiatedRelationships UserRelationship[] @relation("InitiatedRelationships")
+  receivedRelationships  UserRelationship[] @relation("ReceivedRelationships")
+  
+  // Enterprise Association
+  enterprises       UserEnterprise[]
+  
+  // Enterprise Permissions
+  enterprisePermissions EnterprisePermission[] @relation("GrantedBy")
+  
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
 
   @@index([email])
   @@index([phone])
@@ -112,11 +201,11 @@ model UserProfile {
   bio               String?
   
   // Media
-  profilePhotoUrl   String?  // URL a storage (S3, CloudStorage, etc)
-  profilePhotoKey   String?  // Key para recuperar el archivo
+  profilePhotoUrl   String?
+  profilePhotoKey   String?
   
-  // Contact Information (heredado de Auth, pero puede sobreescribirse)
-  phone             String?  // Duplicado de User.phone para referencia rápida
+  // Contact Information
+  phone             String?
   emergencyContact  String?
   emergencyPhone    String?
   
@@ -151,7 +240,7 @@ model Experience {
   // Company & Position
   companyName       String
   jobTitle          String
-  description       String?  // Descripción del trabajo
+  description       String?
   
   // Employment Details
   employmentType    EmploymentType
@@ -164,8 +253,8 @@ model Experience {
   
   // Additional
   location          String?
-  skills            String[]  // Array de skills usados en este trabajo
-  achievements      String?   // Logros/contribuciones
+  skills            String[]
+  achievements      String?
   
   createdAt         DateTime @default(now())
   updatedAt         DateTime @updatedAt
@@ -180,11 +269,11 @@ model Education {
   
   // Institution & Degree
   school            String
-  degree            String    // Ej: Bachelor, Master, etc
+  degree            String
   fieldOfStudy      String
   
   // Grades
-  grade             String?   // GPA o calificación
+  grade             String?
   
   // Dates
   startDate         DateTime
@@ -192,8 +281,8 @@ model Education {
   isCurrent         Boolean  @default(false)
   
   // Additional
-  description       String?   // Actividades, sociedades, etc
-  skills            String[]  // Skills adquiridas
+  description       String?
+  skills            String[]
   
   createdAt         DateTime @default(now())
   updatedAt         DateTime @updatedAt
@@ -207,9 +296,9 @@ model Skill {
   profile           UserProfile @relation(fields: [profileId], references: [id], onDelete: Cascade)
   
   name              String
-  proficiency       ExperienceLevel?  // JUNIOR, MID, SENIOR, etc
-  yearsOfExperience Int?    // Años de experiencia
-  endorsements      Int     @default(0) // Cantidad de personas que lo recomiendan
+  proficiency       ExperienceLevel?
+  yearsOfExperience Int?
+  endorsements      Int     @default(0)
   
   createdAt         DateTime @default(now())
   updatedAt         DateTime @updatedAt
@@ -227,8 +316,8 @@ model Certification {
   issuingOrganization String
   issueDate         DateTime
   expirationDate    DateTime?
-  certificateUrl    String?   // URL o referencia
-  certificateId     String?   // ID del certificado (para verificación)
+  certificateUrl    String?
+  certificateId     String?
   
   description       String?
   
@@ -244,7 +333,7 @@ model LanguageProficiency {
   profile           UserProfile @relation(fields: [profileId], references: [id], onDelete: Cascade)
   
   language          String
-  proficiency       String   // BEGINNER, INTERMEDIATE, FLUENT, NATIVE, etc
+  proficiency       String
   
   createdAt         DateTime @default(now())
   updatedAt         DateTime @updatedAt
@@ -257,10 +346,14 @@ model LanguageProficiency {
 
 model Role {
   id          String   @id @default(cuid())
-  name        String   @unique
+  name        String
   description String?
-  isSystem    Boolean  @default(false) // Roles del sistema no pueden eliminarse
-  isCustom    Boolean  @default(true)  // Roles personalizados por admin
+  isSystem    Boolean  @default(false)
+  isCustom    Boolean  @default(true)
+  
+  // Vinculación obligatoria con Enterprise
+  enterpriseId String
+  enterprise   Enterprise @relation(fields: [enterpriseId], references: [id], onDelete: Cascade)
   
   // Relations
   users       User[]   @relation("UserRoles")
@@ -269,7 +362,9 @@ model Role {
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
   
+  @@unique([enterpriseId, name])
   @@index([name])
+  @@index([enterpriseId])
 }
 
 model Permission {
@@ -282,12 +377,33 @@ model Permission {
   // Relations
   roles       Role[]   @relation("RolePermissions")
   userAssignments PermissionAssignment[] @relation("PermissionAssignments")
+  enterprisePermissions EnterprisePermission[] @relation("PermissionRelation")
   
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
   
   @@unique([action, resource])
   @@index([resource])
+}
+
+model EnterprisePermission {
+  id            String   @id @default(cuid())
+  enterpriseId  String
+  enterprise    Enterprise @relation(fields: [enterpriseId], references: [id], onDelete: Cascade)
+  
+  permissionId  String
+  permission    Permission @relation("PermissionRelation", fields: [permissionId], references: [id], onDelete: Cascade)
+  
+  grantedBy     String
+  grantedByUser User     @relation("GrantedBy", fields: [grantedBy], references: [id], onDelete: Cascade)
+  
+  grantedAt     DateTime @default(now())
+  expiresAt     DateTime?
+  
+  @@unique([enterpriseId, permissionId])
+  @@index([enterpriseId])
+  @@index([permissionId])
+  @@index([grantedBy])
 }
 
 model PermissionAssignment {
@@ -298,9 +414,9 @@ model PermissionAssignment {
   permissionId String
   permission  Permission @relation("PermissionAssignments", fields: [permissionId], references: [id], onDelete: Cascade)
   
-  grantedBy   String   // ID del admin que otorgó el permiso
+  grantedBy   String
   grantedAt   DateTime @default(now())
-  expiresAt   DateTime? // Permiso temporal
+  expiresAt   DateTime?
   
   @@unique([userId, permissionId])
   @@index([userId])
@@ -314,17 +430,21 @@ model AuditLog {
   userId      String
   user        User     @relation("UserAudits", fields: [userId], references: [id], onDelete: Cascade)
   
-  action      String   // CREATE, UPDATE, DELETE, LOGIN, LOGOUT, etc
-  resource    ResourceType
-  resourceId  String?  // ID del recurso modificado
+  enterpriseId String?
+  enterprise  Enterprise? @relation("EnterpriseAudits", fields: [enterpriseId], references: [id], onDelete: SetNull)
   
-  changes     Json?    // Cambios realizados {before: {...}, after: {...}}
+  action      String
+  resource    ResourceType
+  resourceId  String?
+  
+  changes     Json?
   ipAddress   String?
   userAgent   String?
   
   createdAt   DateTime @default(now())
   
   @@index([userId])
+  @@index([enterpriseId])
   @@index([resource])
   @@index([createdAt])
 }

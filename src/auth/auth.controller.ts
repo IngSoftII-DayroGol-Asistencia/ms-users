@@ -1,8 +1,9 @@
-import { Body, Controller, HttpCode, HttpStatus, Post } from '@nestjs/common';
+import { Body, Controller, HttpCode, HttpStatus, Post, UseGuards, Get, Req } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { LoginDto } from './dto/login.dto';
 import { RegisterDto } from './dto/register.dto';
-import { ApiResetContentResponse, ApiResponse } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiResetContentResponse, ApiResponse } from '@nestjs/swagger';
+import { AuthGuard } from './auth.guard';
 
 @Controller('auth')
 export class AuthController {
@@ -22,5 +23,16 @@ export class AuthController {
     return this.authService.register(data);
   }
 
+  @ApiBearerAuth('Bearer')
+  @ApiResponse({ status: HttpStatus.ACCEPTED, description: "Verify JWT" })
+  @HttpCode(HttpStatus.ACCEPTED)
+  @UseGuards(AuthGuard)
+  @Get('verify')
+  verify(@Req() req: any) {
+    return {
+      userId: req.user.id,
+      email: req.user.email,
+    };
+  }
 
 }
