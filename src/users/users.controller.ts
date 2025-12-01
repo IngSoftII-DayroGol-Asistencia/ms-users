@@ -1,9 +1,9 @@
 import { Controller, Get, HttpCode, HttpStatus, UseGuards, Param } from '@nestjs/common';
 import { ApiBearerAuth, ApiResponse, ApiSecurity } from '@nestjs/swagger';
-import { AuthGuard } from 'src/auth/auth.guard';
 import { UsersService } from './users.service';
+import { AccessTokenGuard } from 'src/auth/guards/access-token.guard';
 
-@UseGuards(AuthGuard)
+@UseGuards(AccessTokenGuard)
 @ApiBearerAuth('Bearer')
 @Controller('users')
 export class UsersController {
