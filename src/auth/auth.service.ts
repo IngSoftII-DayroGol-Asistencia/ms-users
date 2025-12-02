@@ -8,6 +8,7 @@ import * as bcrypt from 'bcrypt';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import { v4 as uuidv4 } from 'uuid';
+import { AuditLogService } from 'src/audit-log/audit-log.service';
 
 @Injectable()
 export class AuthService {
@@ -17,7 +18,8 @@ export class AuthService {
     private readonly dataSource: PrismaService,
     private readonly userService: UsersService,
     private jwtService: JwtService,
-    private configService: ConfigService
+    private configService: ConfigService,
+    private auditLogService: AuditLogService
   ) {
     this.logger = new Logger(AuthService.name);
   }
@@ -178,6 +180,7 @@ export class AuthService {
         where: { id: user.id },
         data: { lastLogin: new Date() },
       });
+
 
       return tokens;
     } catch (error) {

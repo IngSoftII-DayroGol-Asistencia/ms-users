@@ -1,6 +1,3 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
 generator client {
   provider = "prisma-client-js"
 }
@@ -63,40 +60,48 @@ enum RelationshipType {
   TEAM_MEMBER
 }
 
+enum JoinRequestStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
 // ==================== ENTERPRISE ====================
 
 model Enterprise {
-  id          String   @id @default(cuid())
-  name        String   @unique
+  id          String                 @id @default(cuid())
+  name        String                 @unique
   description String?
   logo        String?
   website     String?
-  
-  // Relations
   roles       Role[]
   users       UserEnterprise[]
   permissions EnterprisePermission[]
-  auditLogs   AuditLog[] @relation("EnterpriseAudits")
-  
-  isActive    Boolean  @default(true)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-  
+  auditLogs   AuditLog[]             @relation("EnterpriseAudits")
+
+  joinRequests EnterpriseJoinRequest[]
+
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
   @@index([name])
 }
 
 // ==================== USER ENTERPRISE RELATION ====================
 
 model UserEnterprise {
-  id            String   @id @default(cuid())
-  userId        String
-  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  
-  enterpriseId  String
-  enterprise    Enterprise @relation(fields: [enterpriseId], references: [id], onDelete: Cascade)
-  
-  joinedAt      DateTime @default(now())
-  
+  id     String @id @default(cuid())
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  enterpriseId String
+  enterprise   Enterprise @relation(fields: [enterpriseId], references: [id], onDelete: Cascade)
+
+  isOwner       Boolean  @default(false)
+
+  joinedAt DateTime @default(now())
+
   @@unique([userId, enterpriseId])
   @@index([userId])
   @@index([enterpriseId])
@@ -105,25 +110,25 @@ model UserEnterprise {
 // ==================== USER RELATIONSHIPS (Many-to-Many) ====================
 
 model UserRelationship {
-  id                String   @id @default(cuid())
-  
+  id String @id @default(cuid())
+
   // Usuario que inicia la relación
-  userId            String
-  user              User     @relation("InitiatedRelationships", fields: [userId], references: [id], onDelete: Cascade)
-  
+  userId String
+  user   User   @relation("InitiatedRelationships", fields: [userId], references: [id], onDelete: Cascade)
+
   // Usuario relacionado
-  relatedUserId     String
-  relatedUser       User     @relation("ReceivedRelationships", fields: [relatedUserId], references: [id], onDelete: Cascade)
-  
+  relatedUserId String
+  relatedUser   User   @relation("ReceivedRelationships", fields: [relatedUserId], references: [id], onDelete: Cascade)
+
   // Tipo de relación
-  relationshipType  RelationshipType @default(CONTACT)
-  
+  relationshipType RelationshipType @default(CONTACT)
+
   // Estado de la relación (pendiente, aceptada, bloqueada)
-  status            String   @default("PENDING") // PENDING, ACCEPTED, BLOCKED
-  
-  createdAt         DateTime @default(now())
-  updatedAt         DateTime @updatedAt
-  
+  status String @default("PENDING") // PENDING, ACCEPTED, BLOCKED
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
   @@unique([userId, relatedUserId])
   @@index([userId])
   @@index([relatedUserId])
@@ -133,52 +138,54 @@ model UserRelationship {
 // ==================== AUTH & SECURITY ====================
 
 model User {
-  id                String   @id @default(cuid())
-  email             String   @unique
-  password          String
-  phone             String?  @unique
-  
+  id       String  @id @default(cuid())
+  email    String  @unique
+  password String
+  phone    String? @unique
+
   // Account status
-  isActive          Boolean  @default(true)
-  isVerified        Boolean  @default(false)
-  lastLogin         DateTime?
-  
+  isActive   Boolean   @default(true)
+  isVerified Boolean   @default(false)
+  lastLogin  DateTime?
+
   // Relations
-  profile           UserProfile?
-  roles             Role[]              @relation("UserRoles")
-  tokens            AuthToken[]
-  permissions       PermissionAssignment[] @relation("UserPermissions")
-  auditLogs         AuditLog[]          @relation("UserAudits")
-  
+  profile     UserProfile?
+  roles       Role[]                 @relation("UserRoles")
+  tokens      AuthToken[]
+  permissions PermissionAssignment[] @relation("UserPermissions")
+  auditLogs   AuditLog[]             @relation("UserAudits")
+
   // User Relationships (Many-to-Many)
   initiatedRelationships UserRelationship[] @relation("InitiatedRelationships")
   receivedRelationships  UserRelationship[] @relation("ReceivedRelationships")
-  
+
   // Enterprise Association
-  enterprises       UserEnterprise[]
-  
+  enterprises UserEnterprise[]
+
   // Enterprise Permissions
   enterprisePermissions EnterprisePermission[] @relation("GrantedBy")
-  
-  createdAt         DateTime @default(now())
-  updatedAt         DateTime @updatedAt
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  joinRequests EnterpriseJoinRequest[]
 
   @@index([email])
   @@index([phone])
 }
 
 model AuthToken {
-  id        String   @id @default(cuid())
-  userId    String
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  
+  id     String @id @default(cuid())
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
   type      TokenType
-  token     String   @unique
+  token     String    @unique
   expiresAt DateTime
   revokedAt DateTime?
-  
+
   createdAt DateTime @default(now())
-  
+
   @@index([userId])
   @@index([token])
 }
@@ -186,158 +193,158 @@ model AuthToken {
 // ==================== USER PROFILE & CV ====================
 
 model UserProfile {
-  id                String   @id @default(cuid())
-  userId            String   @unique
-  user              User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  
+  id     String @id @default(cuid())
+  userId String @unique
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
   // Personal Information
-  firstName         String
-  lastName          String
-  dateOfBirth       DateTime?
-  
+  firstName   String
+  lastName    String
+  dateOfBirth DateTime?
+
   // Professional Information
-  jobTitle          String?
-  department        String?
-  bio               String?
-  
+  jobTitle   String?
+  department String?
+  bio        String?
+
   // Media
-  profilePhotoUrl   String?
-  profilePhotoKey   String?
-  
+  profilePhotoUrl String?
+  profilePhotoKey String?
+
   // Contact Information
-  phone             String?
-  emergencyContact  String?
-  emergencyPhone    String?
-  
+  phone            String?
+  emergencyContact String?
+  emergencyPhone   String?
+
   // Location
-  country           String?
-  city              String?
-  address           String?
-  postalCode        String?
-  
+  country    String?
+  city       String?
+  address    String?
+  postalCode String?
+
   // Additional
-  timezone          String?  @default("UTC")
-  language          String?  @default("es")
-  
+  timezone String? @default("UTC")
+  language String? @default("es")
+
   // CV Relations
-  experiences       Experience[]
-  educations        Education[]
-  skills            Skill[]
-  certifications    Certification[]
-  languages         LanguageProficiency[]
-  
-  createdAt         DateTime @default(now())
-  updatedAt         DateTime @updatedAt
+  experiences    Experience[]
+  educations     Education[]
+  skills         Skill[]
+  certifications Certification[]
+  languages      LanguageProficiency[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 // ==================== CV DATA ====================
 
 model Experience {
-  id                String   @id @default(cuid())
-  profileId         String
-  profile           UserProfile @relation(fields: [profileId], references: [id], onDelete: Cascade)
-  
+  id        String      @id @default(cuid())
+  profileId String
+  profile   UserProfile @relation(fields: [profileId], references: [id], onDelete: Cascade)
+
   // Company & Position
-  companyName       String
-  jobTitle          String
-  description       String?
-  
+  companyName String
+  jobTitle    String
+  description String?
+
   // Employment Details
-  employmentType    EmploymentType
-  experienceLevel   ExperienceLevel?
-  
+  employmentType  EmploymentType
+  experienceLevel ExperienceLevel?
+
   // Dates
-  startDate         DateTime
-  endDate           DateTime?
-  isCurrent         Boolean  @default(false)
-  
+  startDate DateTime
+  endDate   DateTime?
+  isCurrent Boolean   @default(false)
+
   // Additional
-  location          String?
-  skills            String[]
-  achievements      String?
-  
-  createdAt         DateTime @default(now())
-  updatedAt         DateTime @updatedAt
-  
+  location     String?
+  skills       String[]
+  achievements String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
   @@index([profileId])
 }
 
 model Education {
-  id                String   @id @default(cuid())
-  profileId         String
-  profile           UserProfile @relation(fields: [profileId], references: [id], onDelete: Cascade)
-  
+  id        String      @id @default(cuid())
+  profileId String
+  profile   UserProfile @relation(fields: [profileId], references: [id], onDelete: Cascade)
+
   // Institution & Degree
-  school            String
-  degree            String
-  fieldOfStudy      String
-  
+  school       String
+  degree       String
+  fieldOfStudy String
+
   // Grades
-  grade             String?
-  
+  grade String?
+
   // Dates
-  startDate         DateTime
-  endDate           DateTime?
-  isCurrent         Boolean  @default(false)
-  
+  startDate DateTime
+  endDate   DateTime?
+  isCurrent Boolean   @default(false)
+
   // Additional
-  description       String?
-  skills            String[]
-  
-  createdAt         DateTime @default(now())
-  updatedAt         DateTime @updatedAt
-  
+  description String?
+  skills      String[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
   @@index([profileId])
 }
 
 model Skill {
-  id                String   @id @default(cuid())
-  profileId         String
-  profile           UserProfile @relation(fields: [profileId], references: [id], onDelete: Cascade)
-  
+  id        String      @id @default(cuid())
+  profileId String
+  profile   UserProfile @relation(fields: [profileId], references: [id], onDelete: Cascade)
+
   name              String
   proficiency       ExperienceLevel?
   yearsOfExperience Int?
-  endorsements      Int     @default(0)
-  
-  createdAt         DateTime @default(now())
-  updatedAt         DateTime @updatedAt
-  
+  endorsements      Int              @default(0)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
   @@unique([profileId, name])
   @@index([profileId])
 }
 
 model Certification {
-  id                String   @id @default(cuid())
-  profileId         String
-  profile           UserProfile @relation(fields: [profileId], references: [id], onDelete: Cascade)
-  
-  name              String
+  id        String      @id @default(cuid())
+  profileId String
+  profile   UserProfile @relation(fields: [profileId], references: [id], onDelete: Cascade)
+
+  name                String
   issuingOrganization String
-  issueDate         DateTime
-  expirationDate    DateTime?
-  certificateUrl    String?
-  certificateId     String?
-  
-  description       String?
-  
-  createdAt         DateTime @default(now())
-  updatedAt         DateTime @updatedAt
-  
+  issueDate           DateTime
+  expirationDate      DateTime?
+  certificateUrl      String?
+  certificateId       String?
+
+  description String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
   @@index([profileId])
 }
 
 model LanguageProficiency {
-  id                String   @id @default(cuid())
-  profileId         String
-  profile           UserProfile @relation(fields: [profileId], references: [id], onDelete: Cascade)
-  
-  language          String
-  proficiency       String
-  
-  createdAt         DateTime @default(now())
-  updatedAt         DateTime @updatedAt
-  
+  id        String      @id @default(cuid())
+  profileId String
+  profile   UserProfile @relation(fields: [profileId], references: [id], onDelete: Cascade)
+
+  language    String
+  proficiency String
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
   @@unique([profileId, language])
   @@index([profileId])
 }
@@ -345,61 +352,61 @@ model LanguageProficiency {
 // ==================== ROLES & PERMISSIONS ====================
 
 model Role {
-  id          String   @id @default(cuid())
+  id          String  @id @default(cuid())
   name        String
   description String?
-  isSystem    Boolean  @default(false)
-  isCustom    Boolean  @default(true)
-  
+  isSystem    Boolean @default(false)
+  isCustom    Boolean @default(true)
+
   // Vinculación obligatoria con Enterprise
   enterpriseId String
   enterprise   Enterprise @relation(fields: [enterpriseId], references: [id], onDelete: Cascade)
-  
+
   // Relations
-  users       User[]   @relation("UserRoles")
+  users       User[]       @relation("UserRoles")
   permissions Permission[] @relation("RolePermissions")
-  
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-  
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
   @@unique([enterpriseId, name])
   @@index([name])
   @@index([enterpriseId])
 }
 
 model Permission {
-  id          String   @id @default(cuid())
-  name        String   @unique
+  id          String           @id @default(cuid())
+  name        String           @unique
   description String?
   action      PermissionAction
   resource    ResourceType
-  
+
   // Relations
-  roles       Role[]   @relation("RolePermissions")
-  userAssignments PermissionAssignment[] @relation("PermissionAssignments")
+  roles                 Role[]                 @relation("RolePermissions")
+  userAssignments       PermissionAssignment[] @relation("PermissionAssignments")
   enterprisePermissions EnterprisePermission[] @relation("PermissionRelation")
-  
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-  
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
   @@unique([action, resource])
   @@index([resource])
 }
 
 model EnterprisePermission {
-  id            String   @id @default(cuid())
-  enterpriseId  String
-  enterprise    Enterprise @relation(fields: [enterpriseId], references: [id], onDelete: Cascade)
-  
-  permissionId  String
-  permission    Permission @relation("PermissionRelation", fields: [permissionId], references: [id], onDelete: Cascade)
-  
+  id           String     @id @default(cuid())
+  enterpriseId String
+  enterprise   Enterprise @relation(fields: [enterpriseId], references: [id], onDelete: Cascade)
+
+  permissionId String
+  permission   Permission @relation("PermissionRelation", fields: [permissionId], references: [id], onDelete: Cascade)
+
   grantedBy     String
-  grantedByUser User     @relation("GrantedBy", fields: [grantedBy], references: [id], onDelete: Cascade)
-  
-  grantedAt     DateTime @default(now())
-  expiresAt     DateTime?
-  
+  grantedByUser User   @relation("GrantedBy", fields: [grantedBy], references: [id], onDelete: Cascade)
+
+  grantedAt DateTime  @default(now())
+  expiresAt DateTime?
+
   @@unique([enterpriseId, permissionId])
   @@index([enterpriseId])
   @@index([permissionId])
@@ -407,17 +414,17 @@ model EnterprisePermission {
 }
 
 model PermissionAssignment {
-  id          String   @id @default(cuid())
-  userId      String
-  user        User     @relation("UserPermissions", fields: [userId], references: [id], onDelete: Cascade)
-  
+  id     String @id @default(cuid())
+  userId String
+  user   User   @relation("UserPermissions", fields: [userId], references: [id], onDelete: Cascade)
+
   permissionId String
-  permission  Permission @relation("PermissionAssignments", fields: [permissionId], references: [id], onDelete: Cascade)
-  
-  grantedBy   String
-  grantedAt   DateTime @default(now())
-  expiresAt   DateTime?
-  
+  permission   Permission @relation("PermissionAssignments", fields: [permissionId], references: [id], onDelete: Cascade)
+
+  grantedBy String
+  grantedAt DateTime  @default(now())
+  expiresAt DateTime?
+
   @@unique([userId, permissionId])
   @@index([userId])
   @@index([permissionId])
@@ -426,25 +433,48 @@ model PermissionAssignment {
 // ==================== AUDIT & LOGGING ====================
 
 model AuditLog {
-  id          String   @id @default(cuid())
-  userId      String
-  user        User     @relation("UserAudits", fields: [userId], references: [id], onDelete: Cascade)
-  
+  id     String @id @default(cuid())
+  userId String
+  user   User   @relation("UserAudits", fields: [userId], references: [id], onDelete: Cascade)
+
   enterpriseId String?
-  enterprise  Enterprise? @relation("EnterpriseAudits", fields: [enterpriseId], references: [id], onDelete: SetNull)
-  
-  action      String
-  resource    ResourceType
-  resourceId  String?
-  
-  changes     Json?
-  ipAddress   String?
-  userAgent   String?
-  
-  createdAt   DateTime @default(now())
-  
+  enterprise   Enterprise? @relation("EnterpriseAudits", fields: [enterpriseId], references: [id], onDelete: SetNull)
+
+  action     String
+  resource   ResourceType
+  resourceId String?
+
+  changes   Json?
+  ipAddress String?
+  userAgent String?
+
+  createdAt DateTime @default(now())
+
   @@index([userId])
   @@index([enterpriseId])
   @@index([resource])
   @@index([createdAt])
+}
+
+//======================== ENTERPRISE JOIN =================
+
+model EnterpriseJoinRequest {
+  id String @id @default(cuid())
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  enterpriseId String
+  enterprise   Enterprise @relation(fields: [enterpriseId], references: [id], onDelete: Cascade)
+
+  status JoinRequestStatus @default(PENDING)
+
+  requestedAt DateTime  @default(now())
+  processedAt DateTime?
+  processedBy String?
+
+  @@unique([userId, enterpriseId])
+  @@index([userId])
+  @@index([enterpriseId])
+  @@index([status])
 }
