@@ -37,27 +37,27 @@ export class UsersService {
     try {
       return await this.dataSource.userProfile.create({
         data: {
-          country: data.country,
           userId: userId,
           firstName: data.firstName,
           lastName: data.lastName,
-          dateOfBirth: data.dateOfBirth,
-          jobTitle: data.jobTitle,
-          department: data.department,
-          bio: data.bio,
-          profilePhotoUrl: data.profilePhotoUrl,
-          profilePhotoKey: data.profilePhotoKey,
-          emergencyContact: data.emergencyContact,
-          emergencyPhone: data.emergencyPhone,
-          city: data.city,
-          address: data.address,
-          postalCode: data.postalCode,
-          phone: phone
+          ...(data.country !== undefined && { country: data.country }),
+          ...(data.dateOfBirth !== undefined && { dateOfBirth: data.dateOfBirth }),
+          ...(data.jobTitle !== undefined && { jobTitle: data.jobTitle }),
+          ...(data.department !== undefined && { department: data.department }),
+          ...(data.bio !== undefined && { bio: data.bio }),
+          ...(data.profilePhotoUrl !== undefined && { profilePhotoUrl: data.profilePhotoUrl }),
+          ...(data.profilePhotoKey !== undefined && { profilePhotoKey: data.profilePhotoKey }),
+          ...(data.emergencyContact !== undefined && { emergencyContact: data.emergencyContact }),
+          ...(data.emergencyPhone !== undefined && { emergencyPhone: data.emergencyPhone }),
+          ...(data.city !== undefined && { city: data.city }),
+          ...(data.address !== undefined && { address: data.address }),
+          ...(data.postalCode !== undefined && { postalCode: data.postalCode }),
+          ...(phone !== undefined && { phone: phone }),
         },
-      })
+      });
     } catch (error) {
       this.errorHandler(error, "Error creating user");
-      return null
+      return null;
     }
   }
 

@@ -14,7 +14,7 @@ export class RegisterDto extends CreateUserDto {
   @IsNotEmpty()
   password: string;
 
-  @ApiProperty({ example: "+573001234587", required: false })
+  @ApiProperty({ example: "+573001234587", required: false, nullable: true })
   @IsPhoneNumber()
   @IsOptional()
   phone?: string;
