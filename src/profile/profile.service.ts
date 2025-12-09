@@ -137,13 +137,94 @@ export class ProfileService {
 
   async updateProfile(userId: string, updateProfileDto: UpdateProfileDto) {
     const profile = await this.getProfileByUserIdd(userId);
-
+    this.logger.log(profile)
+    const {
+      experiences,
+      educations,
+      skills,
+      languages,
+      certifications,
+      ...flatData
+    } = updateProfileDto;
     return this.prisma.userProfile.update({
       where: { id: profile.id },
       data: {
-        ...updateProfileDto,
-        ...(updateProfileDto.dateOfBirth && {
-          dateOfBirth: new Date(updateProfileDto.dateOfBirth),
+        ...flatData,
+
+        ...(flatData.dateOfBirth && {
+          dateOfBirth: new Date(flatData.dateOfBirth),
+        }),
+
+        ...(experiences && {
+          experiences: {
+            deleteMany: {},
+            create: experiences.map((exp) => ({
+              companyName: exp.companyName,
+              jobTitle: exp.jobTitle,
+              description: exp.description,
+              employmentType: exp.employmentType,
+              experienceLevel: exp.experienceLevel,
+              startDate: new Date(exp.startDate),
+              endDate: exp.endDate ? new Date(exp.endDate) : null,
+              isCurrent: exp.isCurrent,
+              location: exp.location,
+              skills: exp.skills,
+              achievements: exp.achievements
+            })),
+          },
+        }),
+
+        ...(educations && {
+          educations: {
+            deleteMany: {},
+            create: educations.map((edu) => ({
+              school: edu.school,
+              degree: edu.degree,
+              fieldOfStudy: edu.fieldOfStudy,
+              grade: edu.grade,
+              startDate: new Date(edu.startDate),
+              endDate: edu.endDate ? new Date(edu.endDate) : null,
+              isCurrent: edu.isCurrent,
+              description: edu.description,
+              skills: edu.skills
+            })),
+          },
+        }),
+
+        ...(skills && {
+          skills: {
+            deleteMany: {},
+            create: skills.map((skill) => ({
+              name: skill.name,
+              proficiency: skill.proficiency, // Es un Enum, pasa directo
+              yearsOfExperience: skill.yearsOfExperience
+            })),
+          },
+        }),
+
+        ...(languages && {
+          languages: {
+            deleteMany: {},
+            create: languages.map((lang) => ({
+              language: lang.language,
+              proficiency: lang.proficiency, // Es String según tu schema
+            })),
+          },
+        }),
+
+        ...(certifications && {
+          certifications: {
+            deleteMany: {},
+            create: certifications.map((cert) => ({
+              name: cert.name,
+              issuingOrganization: cert.issuingOrganization,
+              issueDate: new Date(cert.issueDate),
+              expirationDate: cert.expirationDate ? new Date(cert.expirationDate) : null,
+              certificateUrl: cert.certificateUrl,
+              certificateId: cert.certificateId,
+              description: cert.description
+            })),
+          },
         }),
       },
     });

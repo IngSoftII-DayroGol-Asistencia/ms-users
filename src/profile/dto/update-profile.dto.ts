@@ -1,5 +1,11 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsDateString, IsOptional, IsString, IsUrl } from 'class-validator';
+import { IsArray, IsDateString, IsOptional, IsString, IsUrl, ValidateNested } from 'class-validator';
+import { CreateExperienceDto } from './experience/create-experience.dto';
+import { Type } from 'class-transformer';
+import { CreateEducationDto } from './education/create-education.dto';
+import { CreateSkillDto } from './skill/create-skill.dto';
+import { CreateLanguageDto } from './language/create-language.dto';
+import { CreateCertificationDto } from './certification/create-certification.dto';
 
 export class UpdateProfileDto {
   @ApiProperty({ example: 'Carlos', required: false })
@@ -86,4 +92,39 @@ export class UpdateProfileDto {
   @IsString()
   @IsOptional()
   language?: string;
+
+  @ApiProperty({ type: [CreateExperienceDto], required: false })
+  @IsOptional()
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => CreateExperienceDto)
+  experiences?: CreateExperienceDto[];
+
+  @ApiProperty({ type: [CreateEducationDto], required: false })
+  @IsOptional()
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => CreateEducationDto)
+  educations?: CreateEducationDto[];
+
+  @ApiProperty({ type: [CreateSkillDto], required: false })
+  @IsOptional()
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => CreateSkillDto)
+  skills?: CreateSkillDto[];
+
+  @ApiProperty({ type: [CreateLanguageDto], required: false })
+  @IsOptional()
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => CreateLanguageDto)
+  languages?: CreateLanguageDto[];
+
+  @ApiProperty({ type: [CreateCertificationDto], required: false })
+  @IsOptional()
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => CreateCertificationDto)
+  certifications?: CreateCertificationDto[];
 }
