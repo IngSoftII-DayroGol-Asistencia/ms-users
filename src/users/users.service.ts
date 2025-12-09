@@ -1,6 +1,6 @@
 import { HttpException, Injectable, Logger } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
-import { Prisma, UserProfile } from '@prisma/client';
+import { Prisma, User, UserProfile } from '@prisma/client';
 import { CreateUserDto } from './dto/createUser.dto';
 
 
@@ -19,11 +19,24 @@ export class UsersService {
     throw new HttpException(message, codes)
   }
 
-  async user(data: string): Promise<UserProfile | null> {
+  async user(data: string): Promise<User | null> {
     try {
-      return await this.dataSource.userProfile.findUnique({
+      return await this.dataSource.user.findUnique({
         where: {
-          userId: data
+          id: data
+        },
+        include: {
+          enterprises: {
+            include: {
+              enterprise: true
+            }
+          },
+          enterprisePermissions: {
+            include: {
+              enterprise: true,
+              permission: true
+            }
+          }
         }
       })
 

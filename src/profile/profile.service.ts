@@ -137,7 +137,6 @@ export class ProfileService {
 
   async updateProfile(userId: string, updateProfileDto: UpdateProfileDto) {
     const profile = await this.getProfileByUserIdd(userId);
-    this.logger.log(profile)
     const {
       experiences,
       educations,
