@@ -1,5 +1,5 @@
 # Etapa 1: Build
-FROM node:22-alpine AS builder
+FROM node:22-slim AS builder
 
 WORKDIR /app
 
@@ -23,18 +23,21 @@ RUN pnpm exec prisma generate
 RUN pnpm run build
 
 # Etapa 2: Runtime
-FROM node:22-alpine
+FROM node:22-slim
 
 WORKDIR /app
 
-# Instalar pnpm globalmente y herramientas de seguridad
+# Instalar pnpm globalmente y herramientas necesarias
 RUN npm install -g pnpm@latest && \
     npm cache clean --force && \
-    apk add --no-cache dumb-init curl
+    apt-get update && \
+    apt-get install -y --no-install-recommends dumb-init curl && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/*
 
 # Crear usuario no-root
-RUN addgroup -g 1001 -S nodejs && \
-    adduser -S nodejs -u 1001 && \
+RUN groupadd -g 1001 nodejs && \
+    useradd -u 1001 -g nodejs -m nodejs && \
     mkdir -p /app && \
     chown -R nodejs:nodejs /app
 
