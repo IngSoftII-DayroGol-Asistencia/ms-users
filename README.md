@@ -21,6 +21,186 @@
   <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
   [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
 
+```
+ms-users
+├─ .docker-compose.yml
+├─ .dockerignore
+├─ .prettierrc
+├─ docker-compose.yml
+├─ Dockerfile
+├─ eslint.config.mjs
+├─ LICENSE
+├─ nest-cli.json
+├─ package.json
+├─ pnpm-lock.yaml
+├─ prisma
+│  ├─ migrations
+│  │  ├─ 20251025135745_init
+│  │  │  └─ migration.sql
+│  │  ├─ 20251027024931
+│  │  │  └─ migration.sql
+│  │  ├─ 20251201211847_add_enterprise_join_requests
+│  │  │  └─ migration.sql
+│  │  ├─ 20251201213532_add_owner_to_user_enterprise
+│  │  │  └─ migration.sql
+│  │  └─ migration_lock.toml
+│  └─ schema.prisma
+├─ prisma.config.ts
+├─ README.md
+├─ src
+│  ├─ app.controller.spec.ts
+│  ├─ app.controller.ts
+│  ├─ app.module.ts
+│  ├─ app.service.ts
+│  ├─ audit-log
+│  │  ├─ audit-log.controller.spec.ts
+│  │  ├─ audit-log.controller.ts
+│  │  ├─ audit-log.module.ts
+│  │  ├─ audit-log.service.spec.ts
+│  │  ├─ audit-log.service.ts
+│  │  └─ dto
+│  │     ├─ create-audit-log.dto.ts
+│  │     ├─ index.ts
+│  │     └─ query-audit-log.dto.ts
+│  ├─ auth
+│  │  ├─ auth.controller.spec.ts
+│  │  ├─ auth.controller.ts
+│  │  ├─ auth.guard.ts
+│  │  ├─ auth.module.ts
+│  │  ├─ auth.service.spec.ts
+│  │  ├─ auth.service.ts
+│  │  ├─ constants.ts
+│  │  ├─ decorators
+│  │  │  ├─ current-user.decorator.ts
+│  │  │  ├─ index.ts
+│  │  │  ├─ public.decorator.ts
+│  │  │  └─ roles.decorator.ts
+│  │  ├─ dto
+│  │  │  ├─ login.dto.ts
+│  │  │  ├─ refresh-token.dto.ts
+│  │  │  └─ register.dto.ts
+│  │  ├─ guards
+│  │  │  ├─ access-token.guard.ts
+│  │  │  ├─ enterprise-permission.guard.ts
+│  │  │  ├─ index.ts
+│  │  │  ├─ owner.guard.ts
+│  │  │  ├─ refresh-token.guard.ts
+│  │  │  └─ roles.guard.ts
+│  │  └─ strategies
+│  │     ├─ access-token.strategy.ts
+│  │     └─ refresh-token.strategy.ts
+│  ├─ config
+│  │  ├─ app-config.service.ts
+│  │  ├─ config.interface.ts
+│  │  ├─ config.module.ts
+│  │  ├─ configuration.ts
+│  │  ├─ env.validation.ts
+│  │  └─ index.ts
+│  ├─ create-audit-log.dto.ts
+│  │  └─ create-audit-log.dto.ts.module.ts
+│  ├─ enterprise
+│  │  ├─ dto
+│  │  │  ├─ create-enterprise.dto.ts
+│  │  │  ├─ handle-join-request.dto.ts
+│  │  │  ├─ index.ts
+│  │  │  ├─ join-enterprise.dto.ts
+│  │  │  └─ update-enterprise.dto.ts
+│  │  ├─ enterprise.controller.spec.ts
+│  │  ├─ enterprise.controller.ts
+│  │  ├─ enterprise.module.ts
+│  │  ├─ enterprise.service.spec.ts
+│  │  └─ enterprise.service.ts
+│  ├─ enterprise-permission
+│  │  ├─ dto
+│  │  │  ├─ assign-enterprise-permission.dto.ts
+│  │  │  ├─ bulk-assign-permissions.dto.ts
+│  │  │  ├─ index.ts
+│  │  │  └─ revoke-enterprise-permission.dto.ts
+│  │  ├─ enterprise-permission.controller.spec.ts
+│  │  ├─ enterprise-permission.controller.ts
+│  │  ├─ enterprise-permission.module.ts
+│  │  ├─ enterprise-permission.service.spec.ts
+│  │  └─ enterprise-permission.service.ts
+│  ├─ main.ts
+│  ├─ permission-assignment
+│  │  ├─ dto
+│  │  │  ├─ assign-permission.dto.ts
+│  │  │  ├─ bulk-assign-user-permissions.dto.ts
+│  │  │  ├─ index.ts
+│  │  │  └─ update-permission-assignment.dto.ts
+│  │  ├─ permission-assignment.controller.spec.ts
+│  │  ├─ permission-assignment.controller.ts
+│  │  ├─ permission-assignment.module.ts
+│  │  ├─ permission-assignment.service.spec.ts
+│  │  └─ permission-assignment.service.ts
+│  ├─ prisma
+│  │  ├─ prisma.module.ts
+│  │  ├─ prisma.service.spec.ts
+│  │  └─ prisma.service.ts
+│  ├─ profile
+│  │  ├─ dto
+│  │  │  ├─ certification
+│  │  │  │  ├─ create-certification.dto.ts
+│  │  │  │  └─ update-certification.dto.ts
+│  │  │  ├─ education
+│  │  │  │  ├─ create-education.dto.ts
+│  │  │  │  └─ update-education.dto.ts
+│  │  │  ├─ experience
+│  │  │  │  ├─ create-experience.dto.ts
+│  │  │  │  └─ update-experience.dto.ts
+│  │  │  ├─ index.ts
+│  │  │  ├─ language
+│  │  │  │  ├─ create-language.dto.ts
+│  │  │  │  └─ update-language.dto.ts
+│  │  │  ├─ skill
+│  │  │  │  ├─ create-skill.dto.ts
+│  │  │  │  └─ update-skill.dto.ts
+│  │  │  └─ update-profile.dto.ts
+│  │  ├─ profile.controller.spec.ts
+│  │  ├─ profile.controller.ts
+│  │  ├─ profile.module.ts
+│  │  ├─ profile.service.spec.ts
+│  │  └─ profile.service.ts
+│  ├─ roles
+│  │  ├─ dto
+│  │  │  ├─ assign-role.dto.ts
+│  │  │  ├─ create-role.dto.ts
+│  │  │  ├─ index.ts
+│  │  │  └─ update-role.dto.ts
+│  │  ├─ roles.controller.spec.ts
+│  │  ├─ roles.controller.ts
+│  │  ├─ roles.module.ts
+│  │  ├─ roles.service.spec.ts
+│  │  └─ roles.service.ts
+│  ├─ user-relationship
+│  │  ├─ dto
+│  │  │  ├─ create-relationship.dto.ts
+│  │  │  ├─ handle-relationship.dto.ts
+│  │  │  ├─ index.ts
+│  │  │  └─ update-relationship.dto.ts
+│  │  ├─ user-relationship.controller.ts
+│  │  ├─ user-relationship.module.ts
+│  │  ├─ user-relationship.service.spec.ts
+│  │  └─ user-relationship.service.ts
+│  └─ users
+│     ├─ dto
+│     │  ├─ createUser.dto.ts
+│     │  ├─ getUser.dto.ts
+│     │  ├─ register.dto.ts
+│     │  └─ updateUser.dto.ts
+│     ├─ users.controller.spec.ts
+│     ├─ users.controller.ts
+│     ├─ users.module.ts
+│     ├─ users.service.spec.ts
+│     └─ users.service.ts
+├─ test
+│  ├─ app.e2e-spec.ts
+│  └─ jest-e2e.json
+├─ tsconfig.build.json
+└─ tsconfig.json
+
+```
+
 ## Description
 
 [Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
@@ -112,3 +292,4 @@ Nest is an MIT-licensed open source project. It can grow thanks to the sponsors 
 ## License
 
 Nest is [MIT licensed](https://github.com/nestjs/nest/blob/master/LICENSE).
+
