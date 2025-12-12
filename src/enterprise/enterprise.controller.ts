@@ -25,7 +25,7 @@ import {
 } from './dto';
 import { AccessTokenGuard } from '../auth/guards/access-token.guard';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
-import { OwnerGuard } from 'src/auth/guards';
+import { OwnerGuard } from '../auth/guards/owner.guard';
 
 @ApiTags('Enterprise')
 @ApiBearerAuth('Bearer')

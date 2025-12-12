@@ -1,4 +1,4 @@
-import { HttpException, Injectable, Logger } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { Prisma, User, UserProfile } from '@prisma/client';
 import { CreateUserDto } from './dto/createUser.dto';
@@ -15,8 +15,7 @@ export class UsersService {
 
   private errorHandler(error: any, message: string, code?: number) {
     this.logger.error(error);
-    let codes = code || 400
-    throw new HttpException(message, codes)
+    throw new Error(message)
   }
 
   async user(data: string): Promise<User | null> {
@@ -79,7 +78,7 @@ export class UsersService {
   }): Promise<UserProfile | null> {
     try {
       const { where, data } = params;
-      return this.dataSource.userProfile.update({
+      return await this.dataSource.userProfile.update({
         data,
         where,
       });
@@ -91,7 +90,7 @@ export class UsersService {
 
   async deleteUser(where: Prisma.UserProfileWhereUniqueInput): Promise<UserProfile | null> {
     try {
-      return this.dataSource.userProfile.delete({
+      return await this.dataSource.userProfile.delete({
         where,
       })
     } catch (error) {

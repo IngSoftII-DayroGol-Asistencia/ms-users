@@ -1,6 +1,15 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { IsEnum, IsOptional } from 'class-validator';
-import { RelationshipType } from '@prisma/client';
+
+export enum RelationshipType {
+  CONTACT = 'CONTACT',
+  COLLABORATOR = 'COLLABORATOR',
+  FRIEND = 'FRIEND',
+  COLLEAGUE = 'COLLEAGUE',
+  MENTOR = 'MENTOR',
+  MENTEE = 'MENTEE',
+  TEAM_MEMBER = 'TEAM_MEMBER',
+}
 
 export class UpdateRelationshipDto {
   @ApiProperty({

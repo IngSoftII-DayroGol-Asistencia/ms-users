@@ -13,7 +13,6 @@ import {
   HandleRelationshipDto,
   RelationshipAction,
 } from './dto';
-import { RelationshipType } from '@prisma/client';
 
 // Estados de relación
 export const RelationshipStatus = {
@@ -360,7 +359,7 @@ export class UserRelationshipService {
     });
   }
 
-  async getConnectionsByType(userId: string, type: RelationshipType) {
+  async getConnectionsByType(userId: string, type: string) {
     const relationships = await this.prisma.userRelationship.findMany({
       where: {
         OR: [
@@ -518,7 +517,7 @@ export class UserRelationshipService {
         data: {
           userId: userId,
           relatedUserId: targetUserId,
-          relationshipType: RelationshipType.CONTACT,
+          relationshipType: 'CONTACT',
           status: RelationshipStatus.BLOCKED,
         },
       });

@@ -1,6 +1,15 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { IsEnum, IsNotEmpty, IsString } from 'class-validator';
-import { RelationshipType } from '@prisma/client';
+
+export enum RelationshipType {
+  CONTACT = 'CONTACT',
+  COLLABORATOR = 'COLLABORATOR',
+  FRIEND = 'FRIEND',
+  COLLEAGUE = 'COLLEAGUE',
+  MENTOR = 'MENTOR',
+  MENTEE = 'MENTEE',
+  TEAM_MEMBER = 'TEAM_MEMBER',
+}
 
 export class CreateRelationshipDto {
   @ApiProperty({
@@ -19,4 +28,4 @@ export class CreateRelationshipDto {
   @IsEnum(RelationshipType)
   @IsNotEmpty()
   relationshipType: RelationshipType;
-} 
+}

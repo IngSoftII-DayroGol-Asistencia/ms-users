@@ -1,7 +1,7 @@
 import { Module } from '@nestjs/common';
 import { EnterprisePermissionService } from './enterprise-permission.service';
 import { EnterprisePermissionController } from './enterprise-permission.controller';
-import { PrismaModule } from 'src/prisma/prisma.module';
+import { PrismaModule } from '../prisma/prisma.module';
 
 @Module({
   providers: [EnterprisePermissionService],

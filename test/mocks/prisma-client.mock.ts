@@ -1,0 +1,17 @@
+export const ExperienceLevel = {
+  INTERN: 'INTERN',
+  JUNIOR: 'JUNIOR',
+  SEMI_SENIOR: 'SEMI_SENIOR',
+  SENIOR: 'SENIOR',
+  LEAD: 'LEAD',
+  MANAGER: 'MANAGER',
+};
+
+export const EmploymentType = {
+  FULL_TIME: 'FULL_TIME',
+  PART_TIME: 'PART_TIME',
+  CONTRACT: 'CONTRACT',
+  TEMPORARY: 'TEMPORARY',
+  INTERNSHIP: 'INTERNSHIP',
+  VOLUNTEER: 'VOLUNTEER',
+};

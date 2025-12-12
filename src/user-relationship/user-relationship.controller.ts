@@ -26,7 +26,6 @@ import {
 } from './dto';
 import { AccessTokenGuard } from '../auth/guards/access-token.guard';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
-import { RelationshipType } from '@prisma/client';
 
 @ApiTags('User Relationships')
 @ApiBearerAuth('Bearer')
@@ -71,12 +70,12 @@ export class UserRelationshipController {
   }
 
   @ApiOperation({ summary: 'Obtener conexiones por tipo' })
-  @ApiQuery({ name: 'type', enum: RelationshipType })
+  @ApiQuery({ name: 'type', enum: ['CONTACT', 'COLLABORATOR', 'FRIEND', 'COLLEAGUE', 'MENTOR', 'MENTEE', 'TEAM_MEMBER'] })
   @ApiResponse({ status: HttpStatus.OK, description: 'Lista de conexiones filtradas' })
   @Get('connections/type')
   getConnectionsByType(
     @CurrentUser('id') userId: string,
-    @Query('type') type: RelationshipType,
+    @Query('type') type: string,
   ) {
     return this.userRelationshipService.getConnectionsByType(userId, type);
   }
