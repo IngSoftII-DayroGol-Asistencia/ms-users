@@ -47,7 +47,6 @@ RUN pnpm install && \
     pnpm exec prisma generate && \
     pnpm store prune
 
-# Copiar código compilado
 COPY --from=builder --chown=nodejs:nodejs /app/dist ./dist
 
 # Cambiar a usuario no-root
@@ -63,7 +62,7 @@ EXPOSE 8080
 # Cloud Run handles health checks, no need for Docker HEALTHCHECK
 
 ENTRYPOINT ["dumb-init", "--"]
-CMD ["node", "dist/main"]
+CMD ["sh", "-c", "pnpm exec prisma db push --skip-generate && node dist/main"]
 
 LABEL maintainer="juanloaiza21" \
       version="1.0" \
