@@ -15,13 +15,11 @@ export const envValidationSchema = Joi.object({
   }),
 
   // JWT
-  JWT_ACCESS_SECRET: Joi.string().required().min(32).messages({
+  JWT_ACCESS_SECRET: Joi.string().required().messages({
     'string.empty': 'JWT_ACCESS_SECRET es requerido',
-    'string.min': 'JWT_ACCESS_SECRET debe tener al menos 32 caracteres',
   }),
-  JWT_REFRESH_SECRET: Joi.string().required().min(32).messages({
+  JWT_REFRESH_SECRET: Joi.string().required().messages({
     'string.empty': 'JWT_REFRESH_SECRET es requerido',
-    'string.min': 'JWT_REFRESH_SECRET debe tener al menos 32 caracteres',
   }),
   JWT_ACCESS_EXPIRES_IN: Joi.string().default('15m'),
   JWT_REFRESH_EXPIRES_IN: Joi.string().default('7d'),
