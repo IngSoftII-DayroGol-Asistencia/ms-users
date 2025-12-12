@@ -55,12 +55,12 @@ USER nodejs
 
 # Variables de entorno
 ENV NODE_ENV=production \
-    NODE_OPTIONS="--max-old-space-size=512"
+    NODE_OPTIONS="--max-old-space-size=512" \
+    PORT=8080
 
-EXPOSE 3000
+EXPOSE 8080
 
-HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3 \
-    CMD curl -f http://localhost:3000/health || exit 1
+# Cloud Run handles health checks, no need for Docker HEALTHCHECK
 
 ENTRYPOINT ["dumb-init", "--"]
 CMD ["node", "dist/main"]
