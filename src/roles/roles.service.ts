@@ -331,7 +331,7 @@ export class RolesService {
       orderBy: [
         { resource: 'asc' },
         { action: 'asc' },
-      ],
+      ]
     });
   }
 
